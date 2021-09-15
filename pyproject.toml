@@ -1,20 +1,12 @@
 [tool.poetry]
 name = "sight_words"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["bpdonehoo <bpdonehoo@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7.1"
-pandas = "^1.2.4"
-numpy = "1.19.3"
-tensorflow = "^2.5.0"
-torch = "^1.8.1"
-scikit-learn = "^0.24.2"
-seaborn = "^0.11.1"
-matplotlib = "^3.4.2"
 notebook = "^6.4.0"
-Flask = "^2.0.1"
 streamlit = "^0.88.0"
 boto3 = "^1.18.32"
 playsound = "^1.3.0"
