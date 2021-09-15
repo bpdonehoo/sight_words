@@ -78,6 +78,11 @@ say_word_btn = st.button('Say Sight Word')
 if say_word_btn:
     play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
 
+test_word_btn = st.button('Say Sight Word (TEST)')
+
+if test_word_btn:
+    st.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
+
 radio_placeholder = st.empty()
 radio_btn = radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
 
