@@ -1,5 +1,4 @@
 import streamlit as st
-from playsound import playsound
 from pygame import mixer
 import os
 import glob
