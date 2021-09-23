@@ -72,15 +72,14 @@ if 'selected_words' not in st.session_state:
     st.session_state.chosen_word = random.choice(st.session_state.selected_words)
     
 st.title('Sight Words App for Reid')
-say_word_btn = st.button('Say Sight Word')
 
-if say_word_btn:
-    play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
+# say_word_btn = st.button('Say Sight Word')
 
-test_word_btn = st.button('Say Sight Word (TEST)')
+# if say_word_btn:
+#     play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
 
-if test_word_btn:
-    st.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
+audio_placeholder = st.empty()
+audio_player = audio_placeholder.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
 
 radio_placeholder = st.empty()
 radio_btn = radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
@@ -98,6 +97,7 @@ if submit and radio_btn == st.session_state.chosen_word:
     st.session_state.chosen_word = random.choice(st.session_state.selected_words)
     radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
 
+    audio_player = audio_placeholder.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
     play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
 elif submit:
     text_placeholder.text('Incorrect, Try Again!')
