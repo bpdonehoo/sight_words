@@ -1,5 +1,4 @@
 import streamlit as st
-from pygame import mixer
 import os
 import glob
 import pathlib
@@ -40,16 +39,18 @@ def process_csv_TTS(INPUT_FILE, AUDIO_PATH):
                 line_count += 1
             else:
                 current_word = row[0]
-                response = polly_client.synthesize_speech(VoiceId='Joanna',
-                                                          OutputFormat='mp3',
-                                                          Text=current_word,
-                                                          Engine='neural')
-                file = open(f'AUDIO_PATH/{current_word}.mp3', 'wb')
-                file.write(response['AudioStream'].read())
-                file.close()
+                print(f'Current Word is: {current_word}')
+                
+                if not os.path.exists(f'{AUDIO_PATH}/{current_word}.mp3'):
+                    response = polly_client.synthesize_speech(VoiceId='Joanna',
+                                                            OutputFormat='mp3',
+                                                            Text=current_word,
+                                                            Engine='neural')
+                    file = open(f'{AUDIO_PATH}/{current_word}.mp3', 'wb')
+                    file.write(response['AudioStream'].read())
+                    file.close()
 
                 line_count += 1
-
     return None
 
 
@@ -63,16 +64,10 @@ def select_words_from_dir(AUDIO_PATH, number_of_words):
 
 
 def play_mp3(mp3_path):
+    from pygame import mixer
     mixer.init()
     mixer.music.load(mp3_path)
     mixer.music.play()
-
-
-def reset_sight_words_state(AUDIO_PATH):
-    st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
-    st.session_state.chosen_word = random.choice(st.session_state.selected_words)
-    st.session_state.total_answers = 0
-    st.session_state.correct_answers = 0 
 
 
 sidebar_radio = st.sidebar.radio("Choose an Application:", ("Sight Words", "Division Estimation"))
