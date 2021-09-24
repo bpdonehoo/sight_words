@@ -6,10 +6,7 @@ import pathlib
 import random
 import math
 import time
-import csv
-import boto3
 
-  
 INPUT_FILE = pathlib.Path.cwd() / 'data' / 'sight_words.csv'
 AUDIO_PATH = pathlib.Path.cwd() / 'data' / 'audio'
 
@@ -24,6 +21,9 @@ def load_secrets():
 
 
 def process_csv_TTS(INPUT_FILE, AUDIO_PATH):
+    import boto3
+    import csv
+
     secrets_dict = load_secrets()
 
     polly_client = boto3.Session(
@@ -67,19 +67,24 @@ def play_mp3(mp3_path):
     mixer.music.load(mp3_path)
     mixer.music.play()
 
+
+def reset_sight_words_state(AUDIO_PATH):
+    st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
+    st.session_state.chosen_word = random.choice(st.session_state.selected_words)
+    st.session_state.total_answers = 0
+    st.session_state.correct_answers = 0 
+
+
 sidebar_radio = st.sidebar.radio("Choose an Application:", ("Sight Words", "Division Estimation"))
 
 if sidebar_radio == 'Sight Words':
     if 'selected_words' not in st.session_state:
         st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
         st.session_state.chosen_word = random.choice(st.session_state.selected_words)
+        st.session_state.total_answers = 0
+        st.session_state.correct_answers = 0 
         
     st.title('Sight Words App')
-
-    # say_word_btn = st.button('Say Sight Word')
-
-    # if say_word_btn:
-    #     play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
 
     audio_placeholder = st.empty()
     audio_player = audio_placeholder.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
@@ -98,14 +103,21 @@ if sidebar_radio == 'Sight Words':
 
         st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
         st.session_state.chosen_word = random.choice(st.session_state.selected_words)
+        st.session_state.total_answers += 1
+        st.session_state.correct_answers += 1
+ 
         radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
 
         audio_player = audio_placeholder.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
-        play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
     elif submit:
         text_placeholder.text('Incorrect, Try Again!')
+        st.session_state.total_answers += 1
     else:
         pass
+    
+    st.write(f'Total Guesses: {st.session_state.total_answers}')
+    st.write(f'Total Correct: {st.session_state.correct_answers}')
+
 elif sidebar_radio == 'Division Estimation':
     if 'dividend' not in st.session_state:
         st.session_state.dividend = random.randint(1000,9999)
@@ -114,7 +126,7 @@ elif sidebar_radio == 'Division Estimation':
         st.session_state.lower_bound = int(math.floor(st.session_state.answer / 10.0)) * 10
         st.session_state.upper_bound = int(math.ceil(st.session_state.answer / 10.0)) * 10
         st.session_state.total_answers = 0
-        st.session_state.correct_answers = 0
+        st.session_state.correct_answers = 0 
 
     st.title('Division Estimation Drills')
     st.subheader('Find the Lower and Upper Range Estimate for the Following:')
@@ -135,6 +147,7 @@ elif sidebar_radio == 'Division Estimation':
     
     submit = st.button('Submit Answer')
     text_placeholder = st.empty()
+
     if submit and lower_bound_input == st.session_state.lower_bound and upper_bound_input == st.session_state.upper_bound:
         text_placeholder.text(f'Correct Range! The Full Answer is: {round(st.session_state.answer,2)}')
         time.sleep(1)
@@ -146,11 +159,10 @@ elif sidebar_radio == 'Division Estimation':
         upper_placeholder.number_input('Upper Bound Estimate', key='upper2')
 
         st.session_state.dividend = random.randint(1000,9999)
-        st.session_state.divisor = random.randint(50,150)
+        st.session_state.divisor = random.randint(11,99)
         st.session_state.answer = st.session_state.dividend / st.session_state.divisor
         st.session_state.lower_bound = int(math.floor(st.session_state.answer / 10.0)) * 10
         st.session_state.upper_bound = int(math.ceil(st.session_state.answer / 10.0)) * 10
-
         st.session_state.total_answers += 1
         st.session_state.correct_answers += 1
 
@@ -159,15 +171,10 @@ elif sidebar_radio == 'Division Estimation':
 
     elif submit:
         text_placeholder.text('Incorrect, Try Again!')
-
         st.session_state.total_answers += 1
-
     else:
         pass
     
-    #st.write(f'Full Answer: {st.session_state.answer}')
-    #st.write(f'Lower Bound: {st.session_state.lower_bound}')
-    #st.write(f'Upper Bound: {st.session_state.upper_bound}')
     st.write(f'Total Guesses: {st.session_state.total_answers}')
     st.write(f'Total Correct: {st.session_state.correct_answers}')
 
