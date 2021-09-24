@@ -4,6 +4,7 @@ import os
 import glob
 import pathlib
 import random
+import math
 import time
 import csv
 import boto3
@@ -66,40 +67,110 @@ def play_mp3(mp3_path):
     mixer.music.load(mp3_path)
     mixer.music.play()
 
+sidebar_radio = st.sidebar.radio("Choose an Application:", ("Sight Words", "Division Estimation"))
 
-if 'selected_words' not in st.session_state:
-    st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
-    st.session_state.chosen_word = random.choice(st.session_state.selected_words)
-    
-st.title('Sight Words App for Reid')
+if sidebar_radio == 'Sight Words':
+    if 'selected_words' not in st.session_state:
+        st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
+        st.session_state.chosen_word = random.choice(st.session_state.selected_words)
+        
+    st.title('Sight Words App')
 
-# say_word_btn = st.button('Say Sight Word')
+    # say_word_btn = st.button('Say Sight Word')
 
-# if say_word_btn:
-#     play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
+    # if say_word_btn:
+    #     play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
 
-audio_placeholder = st.empty()
-audio_player = audio_placeholder.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
-
-radio_placeholder = st.empty()
-radio_btn = radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
-
-submit = st.button('Submit Answer')
-
-text_placeholder = st.empty()
-
-if submit and radio_btn == st.session_state.chosen_word:
-    text_placeholder.text('Correct Answer!')
-    time.sleep(0.5)
-    text_placeholder.empty()
-
-    st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
-    st.session_state.chosen_word = random.choice(st.session_state.selected_words)
-    radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
-
+    audio_placeholder = st.empty()
     audio_player = audio_placeholder.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
-    play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
-elif submit:
-    text_placeholder.text('Incorrect, Try Again!')
-else:
-    pass
+
+    radio_placeholder = st.empty()
+    radio_btn = radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
+
+    submit = st.button('Submit Answer')
+
+    text_placeholder = st.empty()
+
+    if submit and radio_btn == st.session_state.chosen_word:
+        text_placeholder.text('Correct Answer!')
+        time.sleep(0.5)
+        text_placeholder.empty()
+
+        st.session_state.selected_words = select_words_from_dir(AUDIO_PATH, 5)
+        st.session_state.chosen_word = random.choice(st.session_state.selected_words)
+        radio_placeholder.radio('Select the Correct Word:', st.session_state.selected_words)
+
+        audio_player = audio_placeholder.audio(str(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3'))
+        play_mp3(AUDIO_PATH / f'{st.session_state.chosen_word}.mp3')
+    elif submit:
+        text_placeholder.text('Incorrect, Try Again!')
+    else:
+        pass
+elif sidebar_radio == 'Division Estimation':
+    if 'dividend' not in st.session_state:
+        st.session_state.dividend = random.randint(1000,9999)
+        st.session_state.divisor = random.randint(11,99)
+        st.session_state.answer = st.session_state.dividend / st.session_state.divisor
+        st.session_state.lower_bound = int(math.floor(st.session_state.answer / 10.0)) * 10
+        st.session_state.upper_bound = int(math.ceil(st.session_state.answer / 10.0)) * 10
+        st.session_state.total_answers = 0
+        st.session_state.correct_answers = 0
+
+    st.title('Division Estimation Drills')
+    st.subheader('Find the Lower and Upper Range Estimate for the Following:')
+    col1, col2, col3 = st.columns(3)
+
+    with col2:
+        markdown_placeholder = st.empty()
+        markdown_text = fr'$\frac{{{st.session_state.dividend}}}{{{st.session_state.divisor}}}$'
+        markdown_placeholder.markdown(markdown_text)
+    
+    col4, col5 = st.columns(2)
+    with col4:
+        lower_placeholder = st.empty()
+        lower_bound_input = lower_placeholder.number_input('Lower Bound Estimate', key='lower')
+    with col5:
+        upper_placeholder = st.empty()
+        upper_bound_input = upper_placeholder.number_input('Upper Bound Estimate', key='upper')
+    
+    submit = st.button('Submit Answer')
+    text_placeholder = st.empty()
+    if submit and lower_bound_input == st.session_state.lower_bound and upper_bound_input == st.session_state.upper_bound:
+        text_placeholder.text(f'Correct Range! The Full Answer is: {round(st.session_state.answer,2)}')
+        time.sleep(1)
+        text_placeholder.empty()
+
+        lower_placeholder.empty()
+        lower_placeholder.number_input('Lower Bound Estimate', key='lower1')
+        upper_placeholder.empty()
+        upper_placeholder.number_input('Upper Bound Estimate', key='upper2')
+
+        st.session_state.dividend = random.randint(1000,9999)
+        st.session_state.divisor = random.randint(50,150)
+        st.session_state.answer = st.session_state.dividend / st.session_state.divisor
+        st.session_state.lower_bound = int(math.floor(st.session_state.answer / 10.0)) * 10
+        st.session_state.upper_bound = int(math.ceil(st.session_state.answer / 10.0)) * 10
+
+        st.session_state.total_answers += 1
+        st.session_state.correct_answers += 1
+
+        markdown_text = fr'$\frac{{{st.session_state.dividend}}}{{{st.session_state.divisor}}}$'
+        markdown_placeholder.markdown(markdown_text)
+
+    elif submit:
+        text_placeholder.text('Incorrect, Try Again!')
+
+        st.session_state.total_answers += 1
+
+    else:
+        pass
+    
+    #st.write(f'Full Answer: {st.session_state.answer}')
+    #st.write(f'Lower Bound: {st.session_state.lower_bound}')
+    #st.write(f'Upper Bound: {st.session_state.upper_bound}')
+    st.write(f'Total Guesses: {st.session_state.total_answers}')
+    st.write(f'Total Correct: {st.session_state.correct_answers}')
+
+
+
+
