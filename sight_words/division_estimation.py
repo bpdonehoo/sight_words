@@ -1,7 +1,4 @@
 import streamlit as st
-import os
-import glob
-import pathlib
 import random
 import math
 import time
